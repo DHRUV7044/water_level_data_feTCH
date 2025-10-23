@@ -41,7 +41,7 @@ class OverlayService : Service() {
     private lateinit var dataFetchRunnable: Runnable
 
     // Simulated data as per your request
-    private val simulatedWaterHeights = listOf(1.5, 2.6, 1.2, 0.3, 0.1, 0.0, 2.0, 0.5)
+    private val simulatedWaterHeights = listOf(1.5, 2.0, 1.2, 0.3, 0.1, 0.0, 2.0, 0.5)
     private var simulatedDataIndex = 0
 
     private companion object {
@@ -51,6 +51,9 @@ class OverlayService : Service() {
 
         // --- CUSTOMIZATION: Adjust the update interval here (in milliseconds) ---
         private const val UPDATE_INTERVAL_MS = 5000L // 5 seconds
+
+        // --- CUSTOMIZATION: Adjust the number of bars here ---
+        private const val NUMBER_OF_BARS = 7
 
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "OverlayServiceChannel"
@@ -82,12 +85,13 @@ class OverlayService : Service() {
 
             label = TextView(this).apply {
                 text = "Water Level"
-                setTextColor(Color.WHITE)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-                setPadding(0, 0, 0, 10)
+                setTextColor(Color.GREEN)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                setPadding(0, 0, 0, 0)
             }
 
-            waterLevelIndicatorView = WaterLevelIndicatorView(this)
+            // Pass the number of bars to the view
+            waterLevelIndicatorView = WaterLevelIndicatorView(this, NUMBER_OF_BARS)
 
             container.addView(label)
             container.addView(waterLevelIndicatorView)
@@ -107,8 +111,8 @@ class OverlayService : Service() {
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.TOP or Gravity.END
-            params.y = 50
-            params.x = 20
+            params.y = 10
+            params.x = 10
             Log.d("OverlayService", "WindowManager.LayoutParams created.")
 
             windowManager.addView(overlayView, params)
@@ -173,7 +177,7 @@ class OverlayService : Service() {
 
     private fun updateIndicator(waterHeight: Double) {
         val fillPercentage = (waterHeight / TANK_HEIGHT_METERS).coerceIn(0.0, 1.0)
-        val level = (fillPercentage * 7).roundToInt().coerceIn(0, 7)
+        val level = (fillPercentage * NUMBER_OF_BARS).roundToInt().coerceIn(0, NUMBER_OF_BARS)
         val percentageString = "%.0f".format(fillPercentage * 100)
         Log.d("OverlayService", "Calculated level: $level, Percentage: $percentageString%")
 
@@ -221,17 +225,16 @@ class OverlayService : Service() {
     }
 }
 
-private class WaterLevelIndicatorView(context: Context) : View(context) {
+private class WaterLevelIndicatorView(context: Context, private val bars: Int) : View(context) {
     private val paint = Paint()
-    private val bars = 7
 
     // --- CUSTOMIZATION: Adjust the width and height of the bars here ---
-    private val barWidth = 100f // The width of each bar in pixels
-    private val barHeight = 25f // The height of each bar in pixels
+    private val barWidth = 30f // The width of each bar in pixels
+    private val barHeight = 20f // The height of each bar in pixels
 
-    private val barSpacing = 10f
+    private val barSpacing = 5f
     private val totalHeight = (bars * barHeight) + ((bars - 1) * barSpacing)
-    private var waterLevel = 0 // Level from 0 to 7
+    private var waterLevel = 0 // Level from 0 to `bars`
 
     init {
         setBackgroundColor(Color.TRANSPARENT)
@@ -250,12 +253,13 @@ private class WaterLevelIndicatorView(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (bars <= 0) return
         val startBar = bars - waterLevel
         for (i in startBar until bars) {
             val top = i * (barHeight + barSpacing)
             val rect = RectF(0f, top, barWidth, top + barHeight)
 
-            val fraction = i / (bars - 1).toFloat()
+            val fraction = if (bars > 1) i / (bars - 1).toFloat() else 1f
             val red = (255 * fraction).toInt()
             val green = (255 * (1 - fraction)).toInt()
             paint.color = Color.rgb(red, green, 0)
