@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "water_level_data_feTCH"
+rootProject.name = "water_level_3"
 include(":app")
  

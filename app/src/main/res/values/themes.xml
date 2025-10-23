@@ -1,4 +1,4 @@
 <resources>
 
-    <style name="Theme.Water_level_data_feTCH" parent="Theme.AppCompat.DayNight.NoActionBar" />
+    <style name="Theme.Water_level_3" parent="Theme.AppCompat.DayNight.NoActionBar" />
 </resources>
