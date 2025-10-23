@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="end"
+    android:background="#80000000">
+
+    <TextView
+        android:id="@+id/waterLevelLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="WATER LEVEL --%"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/waterLevelBars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+        <View
+            android:layout_width="40dp"
+            android:layout_height="8dp"
+            android:layout_marginTop="2dp"
+            android:background="@android:color/darker_gray" />
+    </LinearLayout>
+
+</LinearLayout>
