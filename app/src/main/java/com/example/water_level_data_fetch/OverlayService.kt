@@ -53,7 +53,7 @@ class OverlayService : Service() {
         private const val UPDATE_INTERVAL_MS = 5000L // 5 seconds
 
         // --- CUSTOMIZATION: Adjust the number of bars here ---
-        private const val NUMBER_OF_BARS = 7
+        private const val NUMBER_OF_BARS = 10
 
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "OverlayServiceChannel"
@@ -230,7 +230,7 @@ private class WaterLevelIndicatorView(context: Context, private val bars: Int) :
 
     // --- CUSTOMIZATION: Adjust the width and height of the bars here ---
     private val barWidth = 30f // The width of each bar in pixels
-    private val barHeight = 20f // The height of each bar in pixels
+    private val barHeight = 15f // The height of each bar in pixels
 
     private val barSpacing = 5f
     private val totalHeight = (bars * barHeight) + ((bars - 1) * barSpacing)

@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
-base.archivesName.set("water_level_data_fetch")
+base.archivesName.set("water_level_3")
 android {
     namespace = "com.example.water_level_data_fetch"
     compileSdk {
@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.water_level_data_fetch"
         minSdk = 33
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "3.2"
 
     }
 
