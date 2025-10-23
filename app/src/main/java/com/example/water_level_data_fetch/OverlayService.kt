@@ -24,10 +24,12 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.math.roundToInt
 
 class OverlayService : Service() {
@@ -40,21 +42,21 @@ class OverlayService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var dataFetchRunnable: Runnable
 
-    // Simulated data as per your request
-    private val simulatedWaterHeights = listOf(1.5, 2.0, 1.2, 0.3, 0.1, 0.0, 2.0, 0.5)
-    private var simulatedDataIndex = 0
+    private val serviceJob = Job()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+
+    private val apiService: WaterLevelApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.31.164:5000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WaterLevelApiService::class.java)
+    }
 
     private companion object {
-        // URL is commented out to use simulated data
-        // private const val WATER_LEVEL_URL = "http://your-ip-address-here/waterlevel"
         private const val TANK_HEIGHT_METERS = 2.0
-
-        // --- CUSTOMIZATION: Adjust the update interval here (in milliseconds) ---
-        private const val UPDATE_INTERVAL_MS = 5000L // 5 seconds
-
-        // --- CUSTOMIZATION: Adjust the number of bars here ---
+        private const val UPDATE_INTERVAL_MS = 5000L
         private const val NUMBER_OF_BARS = 10
-
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "OverlayServiceChannel"
     }
@@ -78,25 +80,24 @@ class OverlayService : Service() {
             Log.d("OverlayService", "WindowManager obtained.")
 
             // --- UI Setup ---
-            val container = LinearLayout(this).apply {
+            val rootContainer = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.END
             }
 
-            label = TextView(this).apply {
-                text = "Water Level"
-                setTextColor(Color.GREEN)
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-                setPadding(0, 0, 0, 0)
-            }
-
-            // Pass the number of bars to the view
             waterLevelIndicatorView = WaterLevelIndicatorView(this, NUMBER_OF_BARS)
 
-            container.addView(label)
-            container.addView(waterLevelIndicatorView)
+            label = TextView(this).apply {
+                text = "Water Level: --%"
+                setTextColor(Color.WHITE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                setPadding(10, 5, 10, 5)
+            }
 
-            overlayView = container
+            rootContainer.addView(label)
+            rootContainer.addView(waterLevelIndicatorView)
+
+            overlayView = rootContainer
             Log.d("OverlayService", "Overlay view created.")
 
             val params = WindowManager.LayoutParams(
@@ -118,7 +119,6 @@ class OverlayService : Service() {
             windowManager.addView(overlayView, params)
             Log.d("OverlayService", "View added to WindowManager.")
 
-            // --- Data Fetching Setup ---
             setupDataFetching()
 
         } catch (e: Exception) {
@@ -136,43 +136,15 @@ class OverlayService : Service() {
     }
 
     private fun fetchWaterLevel() {
-        // Using simulated data as requested
-        val waterHeight = simulatedWaterHeights[simulatedDataIndex]
-        Log.d("OverlayService", "Simulated water height: $waterHeight")
-        updateIndicator(waterHeight)
-        simulatedDataIndex = (simulatedDataIndex + 1) % simulatedWaterHeights.size
-
-        /*
-        // Original IP fetching logic is commented out
-        Thread {
+        serviceScope.launch {
             try {
-                val url = URL(WATER_LEVEL_URL)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.connectTimeout = 3000
-                connection.readTimeout = 3000
-
-                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
-                    val response = reader.readLine()
-                    reader.close()
-                    Log.d("OverlayService", "Fetched data: $response")
-
-                    val waterHeight = response.toDoubleOrNull()
-                    if (waterHeight != null) {
-                        updateIndicator(waterHeight)
-                    } else {
-                        Log.e("OverlayService", "Invalid data format from server: $response")
-                    }
-                } else {
-                    Log.e("OverlayService", "HTTP Error: ${connection.responseCode}")
-                }
-                connection.disconnect()
+                val waterLevelData = apiService.getWaterLevelData()
+                Log.d("OverlayService", "Fetched data: $waterLevelData")
+                updateIndicator(waterLevelData.height_m)
             } catch (e: Exception) {
                 Log.e("OverlayService", "Failed to fetch water level", e)
             }
-        }.start()
-        */
+        }
     }
 
     private fun updateIndicator(waterHeight: Double) {
@@ -213,6 +185,7 @@ class OverlayService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(dataFetchRunnable)
+        serviceJob.cancel()
         Log.d("OverlayService", "onDestroy: Service is being destroyed.")
         try {
             if (::overlayView.isInitialized) {
@@ -244,8 +217,7 @@ private class WaterLevelIndicatorView(context: Context, private val bars: Int) :
         if (level in 0..bars) {
             waterLevel = level
             invalidate() // Request a redraw
-        }
-    }
+        }    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(barWidth.toInt(), totalHeight.toInt())
