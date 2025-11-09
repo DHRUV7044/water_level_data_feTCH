@@ -47,14 +47,14 @@ class OverlayService : Service() {
 
     private val apiService: WaterLevelApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.164.226.87:5000/")
+            .baseUrl("http://192.168.31.107/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(WaterLevelApiService::class.java)
     }
 
     private companion object {
-        private const val TANK_HEIGHT_METERS = 2.0
+        private const val TANK_HEIGHT_MM = 950.0 // Assuming 95cm tank height
         private const val UPDATE_INTERVAL_MS = 5000L
         private const val NUMBER_OF_BARS = 10
         private const val NOTIFICATION_ID = 1
@@ -140,7 +140,7 @@ class OverlayService : Service() {
             try {
                 val waterLevelData = apiService.getWaterLevelData()
                 Log.d("OverlayService", "Fetched data: $waterLevelData")
-                updateIndicator(waterLevelData.height_m)
+                updateIndicator(waterLevelData.waterLevelMm)
             } catch (e: Exception) {
                 Log.e("OverlayService", "Failed to fetch water level", e)
             }
@@ -148,7 +148,7 @@ class OverlayService : Service() {
     }
 
     private fun updateIndicator(waterHeight: Double) {
-        val fillPercentage = (waterHeight / TANK_HEIGHT_METERS).coerceIn(0.0, 1.0)
+        val fillPercentage = (waterHeight / TANK_HEIGHT_MM).coerceIn(0.0, 1.0)
         val level = (fillPercentage * NUMBER_OF_BARS).roundToInt().coerceIn(0, NUMBER_OF_BARS)
         val percentageString = "%.0f".format(fillPercentage * 100)
         Log.d("OverlayService", "Calculated level: $level, Percentage: $percentageString%")

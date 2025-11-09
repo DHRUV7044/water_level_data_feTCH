@@ -1,6 +1,8 @@
 package com.example.water_level_data_fetch
 
+import com.google.gson.annotations.SerializedName
+
 data class WaterLevelData(
-    val height_m: Double,
-    val timestamp: Long
+    @SerializedName("water_level_mm")
+    val waterLevelMm: Double
 )
