@@ -89,7 +89,7 @@ This project was conceptualized and designed by Dhruvkumar Shingala and Mukeshbh
 App code was written with AI-assisted development (Gemini), followed by manual debugging, optimization, and integration with real hardware.
 All system logic, architecture design, calibration, and final testing were performed manually.
 
-<img width="2010" height="1192" alt="water level project simulated v3 4" src="https://github.com/user-attachments/assets/67583c9e-7302-4a5f-a5a7-03d122a81771" />
+<img width="201" height="119" alt="water level project simulated v3 4" src="https://github.com/user-attachments/assets/67583c9e-7302-4a5f-a5a7-03d122a81771" />
 
 Image 1: Development Simulation – Android Studio
 Shows the Water-Level Monitoring App running in the Android Studio emulator during testing and development. Used for validating the overlay layout, data updates, and UI behavior.
