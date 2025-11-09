@@ -94,7 +94,7 @@ All system logic, architecture design, calibration, and final testing were perfo
 Image 1: Development Simulation – Android Studio
 Shows the Water-Level Monitoring App running in the Android Studio emulator during testing and development. Used for validating the overlay layout, data updates, and UI behavior.
 
-<img width="500" height="200" alt="water level project real run v3 4" src="https://github.com/user-attachments/assets/05604ae7-7bc9-46fb-9fa8-1edff12009e1" />
+<img width="400" height="200" alt="water level project real run v3 4" src="https://github.com/user-attachments/assets/05604ae7-7bc9-46fb-9fa8-1edff12009e1" />
 
 Image 2: Deployed on Real Android TV
 Displays the final live implementation on an actual Android TV, receiving real-time water-level data from the ESP32 and showing it as dynamic horizontal bars on the screen.
