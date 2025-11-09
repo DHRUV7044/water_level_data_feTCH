@@ -89,19 +89,17 @@ This project was conceptualized and designed by Dhruvkumar Shingala and Mukeshbh
 App code was written with AI-assisted development (Gemini), followed by manual debugging, optimization, and integration with real hardware.
 All system logic, architecture design, calibration, and final testing were performed manually.
 
-<img width="400" height="200" alt="water level project simulated v3 4" src="https://github.com/user-attachments/assets/67583c9e-7302-4a5f-a5a7-03d122a81771" />
+<img width="500" height="200" alt="water level project simulated v3 4" src="https://github.com/user-attachments/assets/67583c9e-7302-4a5f-a5a7-03d122a81771" />
 
 Image 1: Development Simulation – Android Studio
 Shows the Water-Level Monitoring App running in the Android Studio emulator during testing and development. Used for validating the overlay layout, data updates, and UI behavior.
 
-![water level project real run v3 4](https://github.com/user-attachments/assets/05604ae7-7bc9-46fb-9fa8-1edff12009e1)
-<img width="400" height="200" alt="water level project real run v3 4" src="https://github.com/user-attachments/assets/05604ae7-7bc9-46fb-9fa8-1edff12009e1" />
+<img width="500" height="200" alt="water level project real run v3 4" src="https://github.com/user-attachments/assets/05604ae7-7bc9-46fb-9fa8-1edff12009e1" />
 
 Image 2: Deployed on Real Android TV
 Displays the final live implementation on an actual Android TV, receiving real-time water-level data from the ESP32 and showing it as dynamic horizontal bars on the screen.
 
-![water level project webpage](https://github.com/user-attachments/assets/5ba9f849-c1d9-4ce1-b38c-47f8abb4179e)
-<img width="400" height="200" alt="water level project webpage" src="https://github.com/user-attachments/assets/5ba9f849-c1d9-4ce1-b38c-47f8abb4179e" />
+<img width="400" height="700" alt="water level project webpage" src="https://github.com/user-attachments/assets/5ba9f849-c1d9-4ce1-b38c-47f8abb4179e" />
 
 Image 3: Web Dashboard Interface (ESP32 Hosted Page)
 Displays the ESP32-hosted webpage visualizing the water tank level in real time.
