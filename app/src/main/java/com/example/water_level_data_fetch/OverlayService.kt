@@ -54,8 +54,7 @@ class OverlayService : Service() {
     }
 
     private companion object {
-        private const val TANK_HEIGHT_MM = 950.0 // Assuming 95cm tank height
-        private const val UPDATE_INTERVAL_MS = 5000L
+        private const val UPDATE_INTERVAL_MS = 30000L
         private const val NUMBER_OF_BARS = 10
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "OverlayServiceChannel"
@@ -140,17 +139,17 @@ class OverlayService : Service() {
             try {
                 val waterLevelData = apiService.getWaterLevelData()
                 Log.d("OverlayService", "Fetched data: $waterLevelData")
-                updateIndicator(waterLevelData.waterLevelMm)
+                updateIndicator(waterLevelData.percent)
             } catch (e: Exception) {
                 Log.e("OverlayService", "Failed to fetch water level", e)
             }
         }
     }
 
-    private fun updateIndicator(waterHeight: Double) {
-        val fillPercentage = (waterHeight / TANK_HEIGHT_MM).coerceIn(0.0, 1.0)
+    private fun updateIndicator(percentage: Double) {
+        val fillPercentage = (percentage / 100.0).coerceIn(0.0, 1.0)
         val level = (fillPercentage * NUMBER_OF_BARS).roundToInt().coerceIn(0, NUMBER_OF_BARS)
-        val percentageString = "%.0f".format(fillPercentage * 100)
+        val percentageString = "%.0f".format(percentage)
         Log.d("OverlayService", "Calculated level: $level, Percentage: $percentageString%")
 
         handler.post {
@@ -217,7 +216,8 @@ private class WaterLevelIndicatorView(context: Context, private val bars: Int) :
         if (level in 0..bars) {
             waterLevel = level
             invalidate() // Request a redraw
-        }    }
+        }
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(barWidth.toInt(), totalHeight.toInt())

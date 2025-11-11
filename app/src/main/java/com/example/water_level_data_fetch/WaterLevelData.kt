@@ -4,5 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class WaterLevelData(
     @SerializedName("water_level_mm")
-    val waterLevelMm: Double
+    val waterLevelMm: Double,
+    @SerializedName("percent")
+    val percent: Double
 )

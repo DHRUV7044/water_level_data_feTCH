@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.water_level_data_fetch"
         minSdk = 33
         targetSdk = 36
-        versionCode = 3;4
-        versionName = "3.4"
+        versionCode = 3;5
+        versionName = "3.5"
 
     }
 
