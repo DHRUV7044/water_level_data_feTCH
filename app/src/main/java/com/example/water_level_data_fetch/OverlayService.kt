@@ -12,6 +12,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.RectF
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -38,26 +39,37 @@ class OverlayService : Service() {
     private lateinit var overlayView: View
     private lateinit var waterLevelIndicatorView: WaterLevelIndicatorView
     private lateinit var label: TextView
+    private var mediaPlayer1: MediaPlayer? = null
+    private var mediaPlayer2: MediaPlayer? = null
+    private var isAlertThresholdReached = false
+    private var alertRepetitionCounter = 0
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var dataFetchRunnable: Runnable
+    private val soundHandler = Handler(Looper.getMainLooper())
+    private lateinit var stopSoundRunnable: Runnable
 
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
     private val apiService: WaterLevelApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("http://172.39.4.27:80/")
+            .baseUrl("http://192.168.31.143/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(WaterLevelApiService::class.java)
     }
 
     private companion object {
+        // --- CUSTOMIZATION: Alert Sound Configuration ---
+        private const val ALERT_SOUND_REPETITIONS = 1 // Number of times to play the sound sequence
+        private const val ALERT_SOUND_INTERVAL_MS = 1000L // Interval between sounds
+
         private const val UPDATE_INTERVAL_MS = 30000L
         private const val NUMBER_OF_BARS = 10
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "OverlayServiceChannel"
+        private const val ALERT_THRESHOLD = 85.0
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -69,6 +81,12 @@ class OverlayService : Service() {
         super.onCreate()
         Log.d("OverlayService", "onCreate: Service creating.")
         try {
+            // --- CUSTOMIZATION: Change the alert sound files here ---
+            mediaPlayer1 = MediaPlayer.create(this, R.raw.water_level_alert_loud)
+            mediaPlayer2 = MediaPlayer.create(this, R.raw.water_level_alert_soft) // <-- REPLACE WITH YOUR SECOND SOUND FILE
+
+            setupSoundPlayback()
+
             createNotificationChannel()
             val notification = createNotification()
             startForeground(NOTIFICATION_ID, notification)
@@ -126,6 +144,22 @@ class OverlayService : Service() {
         }
     }
 
+    private fun setupSoundPlayback() {
+        stopSoundRunnable = Runnable {
+            soundHandler.removeCallbacksAndMessages(null)
+            mediaPlayer1?.apply {
+                if (isPlaying) pause()
+                seekTo(0)
+                setOnCompletionListener(null)
+            }
+            mediaPlayer2?.apply {
+                if (isPlaying) pause()
+                seekTo(0)
+                setOnCompletionListener(null)
+            }
+        }
+    }
+
     private fun setupDataFetching() {
         dataFetchRunnable = Runnable {
             fetchWaterLevel()
@@ -151,6 +185,33 @@ class OverlayService : Service() {
         val level = (fillPercentage * NUMBER_OF_BARS).roundToInt().coerceIn(0, NUMBER_OF_BARS)
         val percentageString = "%.0f".format(percentage)
         Log.d("OverlayService", "Calculated level: $level, Percentage: $percentageString%")
+
+        if (percentage > ALERT_THRESHOLD) {
+            if (!isAlertThresholdReached) {
+                isAlertThresholdReached = true
+                alertRepetitionCounter = 0
+
+                mediaPlayer1?.setOnCompletionListener {
+                    soundHandler.postDelayed({ mediaPlayer2?.start() }, ALERT_SOUND_INTERVAL_MS)
+                }
+
+                mediaPlayer2?.setOnCompletionListener {
+                    alertRepetitionCounter++
+                    if (alertRepetitionCounter < ALERT_SOUND_REPETITIONS) {
+                        soundHandler.postDelayed({ mediaPlayer1?.start() }, ALERT_SOUND_INTERVAL_MS)
+                    }
+                }
+
+                mediaPlayer1?.start()
+                Log.d("OverlayService", "Water level exceeded 85%, playing alert sequence $ALERT_SOUND_REPETITIONS times.")
+            }
+        } else {
+            if (isAlertThresholdReached) {
+                isAlertThresholdReached = false
+                stopSoundRunnable.run()
+                Log.d("OverlayService", "Water level is back to normal, stopping alert sequence.")
+            }
+        }
 
         handler.post {
             label.text = "Water Level: $percentageString%"
@@ -184,7 +245,14 @@ class OverlayService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(dataFetchRunnable)
+        soundHandler.removeCallbacks(stopSoundRunnable)
         serviceJob.cancel()
+
+        mediaPlayer1?.release()
+        mediaPlayer1 = null
+        mediaPlayer2?.release()
+        mediaPlayer2 = null
+
         Log.d("OverlayService", "onDestroy: Service is being destroyed.")
         try {
             if (::overlayView.isInitialized) {
