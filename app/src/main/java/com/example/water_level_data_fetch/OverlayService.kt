@@ -47,7 +47,7 @@ class OverlayService : Service() {
 
     private val apiService: WaterLevelApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("http://192.168.31.107/")
+            .baseUrl("http://172.39.4.27:80/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(WaterLevelApiService::class.java)
